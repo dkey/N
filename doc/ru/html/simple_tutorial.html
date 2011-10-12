@@ -3,10 +3,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 lang="en" xml:lang="en">
 <head>
-<title>simple tutorial</title>
+<title>Simple tutorial</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2011-10-12 12:36:58 MSD"/>
+<meta name="generated" content="2011-10-12 18:00:42 MSD"/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   html { font-family: Times, serif; font-size: 12pt; }
@@ -63,11 +63,11 @@ lang="en" xml:lang="en">
 /*]]>*/-->
 </script>
 </head><body>
-<h1 class="title">simple tutorial</h1>
+<h1 class="title">Simple tutorial</h1>
 
 
 <div id="table-of-contents">
-<h2>Table of Contents</h2>
+<h2>Содержание</h2>
 <div id="text-table-of-contents">
 <ul>
 <li><a href="#sec-1">1 Типы </a>
@@ -222,7 +222,7 @@ lang="en" xml:lang="en">
 </thead>
 <tbody>
 <tr><td>Десятичные</td><td>0   123   -1202   999912222</td></tr>
-<tr><td>Восьмиричные</td><td>0o777   0666   0777   0o577</td></tr>
+<tr><td>Восьмиричные</td><td>0o777   0o666   0o577</td></tr>
 <tr><td>Шестнадцатиричные</td><td>0xFFFA   0xFFFFFFFF   0xBAD</td></tr>
 </tbody>
 </table>
@@ -234,13 +234,8 @@ lang="en" xml:lang="en">
 начало и не в конец: 1_000_000_000
 </p>
 <p>
-Восьмеричные литералы начинаются с 0 и опционального символа
-'о'(0o), за которыми следует последовательность восьмеричных цифр:
-0o777 0666
-</p>
-<p>
-? компилятор должен выдавать предупреждение на использование
-восьмиричных чисел, начинающихся не с "0o" ?
+Восьмеричные литералы начинаются с 0 и символа 'о'(0o), за
+которыми следует последовательность восьмеричных цифр: 0o777 0o666
 </p>
 <p>
 Шестандцатиричные литералы начинаются с 0 и символа 'x'(0x), за
@@ -248,7 +243,7 @@ lang="en" xml:lang="en">
 0xF1FA
 </p>
 <p>
-Компилятор должен выдавать ошибку(предупреждение?) если данные,
+Компилятор должен выдавать предупреждение если данные,
 представленные литералом, не могут быть представлены ни одним из
 доступных типов (например, если целое число не помещается ни в
 один из возможных интегральных типов).
@@ -310,7 +305,7 @@ lang="en" xml:lang="en">
 быть вставлен символ '_', но не в начале и не в конце.
 </p>
 <p>
-? Так же существует специальные литералы для представления специальных
+Так же существует специальные литералы для представления специальных
 состояний чисел с плавающей точкой
 </p>
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -458,15 +453,15 @@ lang="en" xml:lang="en">
 <tr><td>()</td><td>вызов</td><td>лево-</td><td>функция</td><td>тип результата функции</td></tr>
 </tbody>
 <tbody>
-<tr><td>! или not</td><td>отрицание</td><td>право-</td><td>bool</td><td></td></tr>
+<tr><td>!</td><td>отрицание</td><td>право-</td><td>bool</td><td></td></tr>
 <tr><td>+</td><td>унарный плюс</td><td>право-</td><td>int, double</td><td></td></tr>
 <tr><td>-</td><td>унарный минус</td><td>право-</td><td>int, double</td><td></td></tr>
 </tbody>
 <tbody>
 <tr><td>*</td><td>умножение</td><td>лево-</td><td>int, double</td><td></td></tr>
 <tr><td>&frasl;</td><td>деление</td><td>лево-</td><td>double</td><td></td></tr>
-<tr><td>~/ или div</td><td>целочисленное деление</td><td>лево-</td><td>int</td><td></td></tr>
-<tr><td>%  или mod</td><td>остаток от деления</td><td>лево-</td><td>int</td><td></td></tr>
+<tr><td>~/</td><td>целочисленное деление</td><td>лево-</td><td>int</td><td></td></tr>
+<tr><td>%</td><td>остаток от деления</td><td>лево-</td><td>int</td><td></td></tr>
 </tbody>
 <tbody>
 <tr><td>+</td><td>сложение</td><td>лево-</td><td>int, double</td><td></td></tr>
@@ -483,13 +478,13 @@ lang="en" xml:lang="en">
 <tr><td>!=</td><td>не равно</td><td>лево-</td><td>int, double, bool</td><td>bool</td></tr>
 </tbody>
 <tbody>
-<tr><td>&amp;&amp; или and</td><td>логическое и</td><td>лево-</td><td>bool</td><td></td></tr>
+<tr><td>&amp;&amp;</td><td>логическое и</td><td>лево-</td><td>bool</td><td></td></tr>
 </tbody>
 <tbody>
-<tr><td>^^ или xor</td><td>логическое исключающее или</td><td>лево-</td><td>bool</td><td></td></tr>
+<tr><td>^^</td><td>логическое исключающее или</td><td>лево-</td><td>bool</td><td></td></tr>
 </tbody>
 <tbody>
-<tr><td>&#124;&#124; или or</td><td>логическое или</td><td>лево-</td><td>bool</td><td></td></tr>
+<tr><td>&#124;&#124;</td><td>логическое или</td><td>лево-</td><td>bool</td><td></td></tr>
 </tbody>
 <tbody>
 <tr><td>&lt;a&gt; if &lt;условие&gt; else &lt;b&gt;</td><td>выбор по условию</td><td>лево-</td><td>&lt;условие&gt; - bool</td><td>тип &lt;a&gt; и &lt;b&gt;</td></tr>
@@ -653,14 +648,14 @@ int может быть неявно преобразован к double.
 <tr><td>_read_double</td><td>считывает со стандартного ввода число типа double</td></tr>
 <tr><td>_read_int</td><td>выводит на стандартный вывод число типа double</td></tr>
 <tr><td>_read_bool</td><td>считывает со стандартного ввода значение типа bool</td></tr>
-<tr><td>_write_bool</td><td>выводит на стандартный вывод число типа bool</td></tr>
+<tr><td>_write_bool</td><td>выводит на стандартный вывод значение типа bool</td></tr>
 </tbody>
 </table>
 
 </div>
 </div>
 <div id="postamble">
-<p class="date"> Date: 2011-10-12 12:36:58 MSD</p>
+<p class="date"> Date: 2011-10-12 18:00:42 MSD</p>
 <p>HTML generated by org-mode 6.21b in emacs 23</p>
 </div></body>
 </html>
