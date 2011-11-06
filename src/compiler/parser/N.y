@@ -66,27 +66,28 @@
 
 program:                                        source_element_list
                                                 {
-                                                    tree = new ast::program(boost::get<ast::source_element_list*>($1.var));
+                                                    tree = new ast::program(std::move(boost::get<src_elem_list_ptr>($1.var)));
                                                 }
 ;
 
 primary_expression:                             identifier
                                                 {
-                                                    $$.var = new ast::identifier(boost::get<std::string>($1.var));
+                                                    $$.var = expr_ptr(new ast::identifier(boost::get<std::string>($1.var)));
                                                 }
 |                                               boolean_literal
                                                 {
-                                                    $$.var = new ast::boolean_literal(boost::get<std::string>($1.var) == "true");
+                                                    $$.var = expr_ptr(new ast::boolean_literal(
+                                                                        boost::get<std::string>($1.var) == "true"));
                                                 }
 |                                               integer_literal
                                                 {
                                                     auto text = boost::get<std::string>($1.var);
-                                                    $$.var = new ast::integer_literal(text);
+                                                    $$.var = expr_ptr(new ast::integer_literal(text));
                                                 }
 |                                               double_literal
                                                 {
                                                     auto text = boost::get<std::string>($1.var);
-                                                    $$.var = new ast::double_literal(text);
+                                                    $$.var = expr_ptr(new ast::double_literal(text));
                                                 }
 |                                               '(' expression ')'
 ;
@@ -104,26 +105,26 @@ double_literal:                                 double_token
 call_expression:                                primary_expression
 |                                               call_expression '(' argument_list ')'
                                                 {
-                                                    $$.var = new ast::call_expression(
-                                                                    boost::get<ast::expression*>($1.var),
-                                                                    boost::get<ast::argument_list*>($3.var));
+                                                    $$.var = expr_ptr(new ast::call_expression(
+                                                                    boost::get<expr_ptr>($1.var),
+                                                                    boost::get<arg_list_ptr>($3.var)));
                                                 }
 ;
 
 argument_list:                                  /* empty */
                                                 {
-                                                    $$.var = new ast::argument_list();
+                                                    $$.var = arg_list_ptr(new ast::argument_list());
                                                 }
 |                                               assignment_expression
                                                 {
-                                                    std::unique_ptr<ast::argument_list> ptr(new ast::argument_list());
-                                                    ptr->args.push_back(boost::get<ast::expression*>($1.var));
-                                                    $$.var = ptr.release();
+                                                    arg_list_ptr ptr(new ast::argument_list());
+                                                    ptr->args.push_back(boost::get<expr_ptr>($1.var));
+                                                    $$.var = std::move(ptr);
                                                 }
 |                                               argument_list ',' assignment_expression
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($3.var);
-                                                    boost::get<ast::argument_list*>($$.var)->args.push_back(expr);
+                                                    auto expr = boost::get<expr_ptr>($3.var);
+                                                    boost::get<arg_list_ptr>($$.var)->args.push_back(std::move(expr));
                                                 }
 ;
 
@@ -133,164 +134,168 @@ left_hand_side_expression:                      call_expression
 unary_expression:                               call_expression
 |                                               '!' unary_expression
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($2.var);
-                                                    $$.var = new ast::unary_expression(expr, ast::unary_expression::logical_not_oper);
+                                                    auto expr = boost::get<expr_ptr>($2.var);
+                                                    $$.var = expr_ptr(new ast::unary_expression(
+                                                                expr, ast::unary_expression::logical_not_oper));
                                                 }
 |                                               '+' unary_expression
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($2.var);
-                                                    $$.var = new ast::unary_expression(expr, ast::unary_expression::plus_oper);
+                                                    auto expr = boost::get<expr_ptr>($2.var);
+                                                    $$.var = expr_ptr(new ast::unary_expression(
+                                                                expr, ast::unary_expression::plus_oper));
                                                 }
 |                                               '-' unary_expression
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($2.var);
-                                                    $$.var = new ast::unary_expression(expr, ast::unary_expression::minus_oper);
+                                                    auto expr = boost::get<expr_ptr>($2.var);
+                                                    $$.var = expr_ptr(new ast::unary_expression(
+                                                                expr, ast::unary_expression::minus_oper));
                                                 }
 ;
 
 multiplicative_expression:                      unary_expression
 |                                               multiplicative_expression '*' unary_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::multiplication_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::multiplication_oper));
                                                 }
 |                                               multiplicative_expression '/' unary_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::division_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::division_oper));
                                                 }
 |                                               multiplicative_expression '%' unary_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::mod_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::mod_oper));
                                                 }
 |                                               multiplicative_expression int_div_token unary_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::int_division_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::int_division_oper));
                                                 }
 ;
 
 additive_expression:                            multiplicative_expression
 |                                               additive_expression '+' multiplicative_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::plus_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::plus_oper));
                                                 }
 |                                               additive_expression '-' multiplicative_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::minus_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::minus_oper));
                                                 }
 ;
 
 relational_expression:                          additive_expression
 |                                               relational_expression '>' additive_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::greater_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::greater_oper));
                                                 }
 |                                               relational_expression '<' additive_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::less_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::less_oper));
                                                 }
 |                                               relational_expression greater_equal_token additive_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::greater_equal_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::greater_equal_oper));
                                                 }
 |                                               relational_expression less_equal_token additive_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::less_equal_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::less_equal_oper));
                                                 }
 ;
 
 equality_expression:                            relational_expression
 |                                               equality_expression equal_token relational_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::equal_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::equal_oper));
                                                 }
 |                                               equality_expression not_equal_token relational_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::not_equal_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::not_equal_oper));
                                                 }
 ;
 
 logical_and_expression:                         equality_expression
 |                                               logical_and_expression logical_and_token equality_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::logical_and_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::logical_and_oper));
                                                 }
 ;
 
 logical_xor_expression:                         logical_and_expression
 |                                               logical_xor_expression logical_xor_token logical_and_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::logical_xor_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::logical_xor_oper));
                                                 }
 ;
 
 logical_or_expression:                          logical_xor_expression
 |                                               logical_or_expression logical_or_token logical_xor_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::logical_or_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::logical_or_oper));
                                                 }
 ;
 
 conditional_expression:                         logical_or_expression
 |                                               logical_or_expression if_token assignment_expression else_token assignment_expression
                                                 {
-                                                    auto true_expr = boost::get<ast::expression*>($1.var),
-                                                        condition = boost::get<ast::expression*>($3.var),
-                                                        false_expr = boost::get<ast::expression*>($5.var);
-                                                    $$.var = new ast::conditional_expression(condition, true_expr, false_expr);
+                                                    auto true_expr = boost::get<expr_ptr>($1.var),
+                                                        condition = boost::get<expr_ptr>($3.var),
+                                                        false_expr = boost::get<expr_ptr>($5.var);
+                                                    $$.var = expr_ptr(new ast::conditional_expression(
+                                                                condition, true_expr, false_expr));
                                                 }
 ;
 
 assignment_expression:                          conditional_expression
 |                                               left_hand_side_expression '=' assignment_expression
                                                 {
-                                                    auto left = boost::get<ast::expression*>($1.var),
-                                                        right = boost::get<ast::expression*>($3.var);
-                                                    $$.var = new ast::binary_expression(left, right,
-                                                                ast::binary_expression::assignment_oper);
+                                                    auto left = boost::get<expr_ptr>($1.var),
+                                                        right = boost::get<expr_ptr>($3.var);
+                                                    $$.var = expr_ptr(new ast::binary_expression(left, right,
+                                                                ast::binary_expression::assignment_oper));
                                                 }
 ;
 
@@ -307,83 +312,85 @@ statement:                                      block
 
 block:                                          '{' '}'
                                                 {
-                                                    $$.var = new ast::block();
+                                                    $$.var = stmt_ptr(new ast::block());
                                                 }
 |                                               '{' statement_list '}'
                                                 {
-                                                    $$.var = new ast::block(boost::get<ast::statement_list*>($2.var));
+                                                    $$.var = stmt_ptr(new ast::block(boost::get<stmt_list_ptr>($2.var)));
                                                 }
 ;
 
 expression_statement:                           expression ';'
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($1.var);
-                                                    $$.var = new ast::expression_statement(expr);
+                                                    auto expr = boost::get<expr_ptr>($1.var);
+                                                    $$.var = stmt_ptr(new ast::expression_statement(expr));
                                                 }
 ;
 
 empty_statement:                                ';'
                                                 {
-                                                    $$.var = new ast::statement();
+                                                    $$.var = stmt_ptr(new ast::statement());
                                                 }
 ;
 
 statement_list:                                 statement
                                                 {
-                                                    std::unique_ptr<ast::statement_list> lst(new ast::statement_list());
-                                                    lst->statements.push_back(boost::get<ast::statement*>($1.var));
-                                                    $$.var = lst.release();
+                                                    stmt_list_ptr lst(new ast::statement_list());
+                                                    lst->statements.push_back(boost::get<stmt_ptr>($1.var));
+                                                    $$.var = std::move(lst);
                                                 }
 |                                               statement_list statement
                                                 {
-                                                    auto stmt = boost::get<ast::statement*>($2.var);
-                                                    boost::get<ast::statement_list*>($$.var)->statements.push_back(stmt);
+                                                    auto stmt = boost::get<stmt_ptr>($2.var);
+                                                    boost::get<stmt_list_ptr>($$.var)->statements.push_back(stmt);
                                                 }
 ;
 
 while_statement:                                while_token '(' expression ')' statement
                                                 {
-                                                    auto expr = boost::get<ast::expression*>($3.var);
-                                                    auto stmt = boost::get<ast::statement*>($5.var);
-                                                    $$.var = new ast::while_statement(expr, stmt);
+                                                    auto expr = boost::get<expr_ptr>($3.var);
+                                                    auto stmt = boost::get<stmt_ptr>($5.var);
+                                                    $$.var = stmt_ptr(new ast::while_statement(expr, stmt));
                                                 }
 ;
 
 return_statement:                               return_token expression ';'
                                                 {
-                                                    $$.var = new ast::return_statement(boost::get<ast::expression*>($2.var));
+                                                    $$.var = stmt_ptr(new ast::return_statement(boost::get<expr_ptr>($2.var)));
                                                 }
 ;
 
 variable_statement:                             type_identifier variable_declaration_list ';'
                                                 {
-                                                    $$.var = new ast::variable_statement(boost::get<std::string>($1.var),
-                                                                    boost::get<ast::variable_declaration_list*>($2.var));
+                                                    $$.var = stmt_ptr(new ast::variable_statement(
+                                                                    boost::get<std::string>($1.var),
+                                                                    boost::get<var_decl_list_ptr>($2.var)));
                                                 }
 ;
 
 variable_declaration_list:                      variable_declaration
                                                 {
-                                                    std::unique_ptr<ast::variable_declaration_list> lst(
-                                                            new ast::variable_declaration_list());
-                                                    lst->vars.push_back(boost::get<ast::variable_declaration*>($1.var));
-                                                    $$.var = lst.release();
+                                                    var_decl_list_ptr lst(new ast::variable_declaration_list());
+                                                    lst->vars.push_back(boost::get<var_decl_ptr>($1.var));
+                                                    $$.var = std::move(lst);
                                                 }
 |                                               variable_declaration_list ',' variable_declaration
                                                 {
-                                                    auto var = boost::get<ast::variable_declaration*>($3.var);
-                                                    boost::get<ast::variable_declaration_list*>($$.var)->vars.push_back(var);
+                                                    auto var = boost::get<var_decl_ptr>($3.var);
+                                                    boost::get<var_decl_list_ptr>($$.var)->vars.push_back(var);
                                                 }
 ;
 
 variable_declaration:                           identifier
                                                 {
-                                                    $$.var = new ast::variable_declaration(boost::get<std::string>($1.var));
+                                                    $$.var = var_decl_ptr(new ast::variable_declaration(
+                                                                boost::get<std::string>($1.var)));
                                                 }
 |                                               identifier initializer
                                                 {
-                                                    $$.var = new ast::variable_declaration(boost::get<std::string>($1.var),
-                                                                    boost::get<ast::expression*>($2.var));
+                                                    $$.var = var_decl_ptr(new ast::variable_declaration(
+                                                                    boost::get<std::string>($1.var),
+                                                                    boost::get<expr_ptr>($2.var)));
                                                 }
 ;
 
@@ -397,8 +404,8 @@ function_declaration:                           identifier '(' parameter_list ')
                                                 {
                                                     auto name = boost::get<std::string>($1.var),
                                                         type = boost::get<std::string>($6.var);
-                                                    auto params = boost::get<ast::parameter_list*>($3.var);
-                                                    $$.var = new ast::function_declaration(name, type, params);
+                                                    auto params = boost::get<param_list_ptr>($3.var);
+                                                    $$.var = stmt_ptr(new ast::function_declaration(name, type, params));
                                                 }
 ;
 
@@ -406,12 +413,10 @@ function_definition:                            identifier '(' parameter_list ')
                                                 {
                                                     auto name = boost::get<std::string>($1.var),
                                                         type = boost::get<std::string>($6.var);
-                                                    auto params = boost::get<ast::parameter_list*>($3.var);
-                                                    std::unique_ptr<ast::function_declaration> decl(
-                                                        new ast::function_declaration(name, type, params));
-                                                    $$.var = new ast::function_definition(decl.get(),
-                                                                boost::get<ast::statement*>($7.var));
-                                                    decl.release();
+                                                    auto params = boost::get<param_list_ptr>($3.var);
+                                                    ast::func_decl_ptr decl(new ast::function_declaration(name, type, params));
+                                                    $$.var = stmt_ptr(new ast::function_definition(decl,
+                                                                boost::get<stmt_ptr>($7.var)));
                                                 }
 ;
 
@@ -420,54 +425,52 @@ type_identifier:                                identifier
 
 parameter_list:                                 /* empty */
                                                 {
-                                                    $$.var = new ast::parameter_list();
+                                                    $$.var = param_list_ptr(new ast::parameter_list());
                                                 }
 |                                               parameter
                                                 {
-                                                    std::unique_ptr<ast::parameter_list> lst(
-                                                        new ast::parameter_list());
-                                                    lst->params.push_back(boost::get<ast::parameter*>($1.var));
-                                                    $$.var = lst.release();
+                                                    param_list_ptr lst(new ast::parameter_list());
+                                                    lst->params.push_back(boost::get<param_ptr>($1.var));
+                                                    $$.var = std::move(lst);
                                                 }
 |                                               parameter_list ',' parameter
                                                 {
-                                                    auto param = boost::get<ast::parameter*>($3.var);
-                                                    boost::get<ast::parameter_list*>($1.var)->params.push_back(param);
+                                                    auto param = boost::get<param_ptr>($3.var);
+                                                    boost::get<param_list_ptr>($1.var)->params.push_back(param);
                                                 }
 ;
 
 parameter:                                      identifier identifier
                                                 {
-                                                    $$.var = new ast::parameter(boost::get<std::string>($1.var),
-                                                                                boost::get<std::string>($2.var));
+                                                    $$.var = param_ptr(new ast::parameter(boost::get<std::string>($1.var),
+                                                                                boost::get<std::string>($2.var)));
                                                 }
 ;
 
 source_element:                                 function_declaration
                                                 {
-                                                    $$.var = new ast::source_element(boost::get<ast::statement*>($1.var));
+                                                    $$.var = src_elem_ptr(new ast::source_element(boost::get<stmt_ptr>($1.var)));
                                                 }
 |                                               function_definition
                                                 {
-                                                    $$.var = new ast::source_element(boost::get<ast::statement*>($1.var));
+                                                    $$.var = src_elem_ptr(new ast::source_element(boost::get<stmt_ptr>($1.var)));
                                                 }
 |                                               variable_statement
                                                 {
-                                                    $$.var = new ast::source_element(boost::get<ast::statement*>($1.var));
+                                                    $$.var = src_elem_ptr(new ast::source_element(boost::get<stmt_ptr>($1.var)));
                                                 }
 ;
 
 source_element_list:                            source_element
                                                 {
-                                                    std::unique_ptr<ast::source_element_list> lst(
-                                                        new ast::source_element_list());
-                                                    lst->childs.push_back(boost::get<ast::source_element*>($1.var));
-                                                    $$.var = lst.release();
+                                                    src_elem_list_ptr lst(new ast::source_element_list());
+                                                    lst->childs.push_back(boost::get<src_elem_ptr>($1.var));
+                                                    $$.var = std::move(lst);
                                                 }
 |                                               source_element_list source_element
                                                 {
-                                                    auto element = boost::get<ast::source_element*>($2.var);
-                                                    boost::get<ast::source_element_list*>($$.var)->childs.push_back(element);
+                                                    auto element = boost::get<src_elem_ptr>($2.var);
+                                                    boost::get<src_elem_list_ptr>($$.var)->childs.push_back(element);
                                                 }
 ;
 

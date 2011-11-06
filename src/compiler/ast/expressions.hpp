@@ -11,51 +11,60 @@ class expression : public node
 {
 };
 
+typedef std::shared_ptr<expression> expr_ptr;
+
 class identifier : public expression
 {
 public:
     std::string text;
-    explicit identifier(const std::string& text) : text(text) {}
+    explicit identifier(const std::string& text) :
+        text(text)
+    {}
 };
 
 class integer_literal : public expression
 {
 public:
     std::string text;
-    explicit integer_literal(const std::string& text) : text(text) {}
+    explicit integer_literal(const std::string& text) :
+       text(text)
+    {}
 };
 
 class double_literal : public expression
 {
 public:
     std::string text;
-    explicit double_literal(const std::string& text) : text(text) {}
+    explicit double_literal(const std::string& text) :
+        text(text)
+    {}
 };
 
 class boolean_literal : public expression
 {
 public:
     bool value;
-    explicit boolean_literal(bool value) : value(value) {}
+    explicit boolean_literal(bool value) :
+        value(value)
+    {}
 };
 
 class argument_list : public node
 {
 public:
-    std::list<expression*> args;
-    virtual ~argument_list()
-    {
-        for(auto i = args.begin(), e = args.end(); i != e; ++i)
-            delete *i;
-    }
+    std::list<expr_ptr> args;
 };
+
+typedef std::shared_ptr<argument_list> arg_list_ptr;
 
 class call_expression : public expression
 {
 public:
-    std::unique_ptr<expression> function;
-    std::unique_ptr<argument_list> args;
-    call_expression(expression* func, argument_list* args) : function(func), args(args) {}
+    expr_ptr function;
+    arg_list_ptr args;
+    call_expression(expr_ptr func, arg_list_ptr args) :
+        function(std::move(func)), args(std::move(args))
+    {}
 };
 
 
@@ -69,9 +78,11 @@ public:
        ,plus_oper
        ,minus_oper
     };
-    std::unique_ptr<expression> operand;
+    expr_ptr operand;
     operator_type oper;
-    unary_expression(expression* operand, operator_type oper) : operand(operand), oper(oper) {}
+    unary_expression(expr_ptr operand, operator_type oper) :
+        operand(std::move(operand)), oper(oper)
+    {}
 };
 
 class binary_expression : public expression
@@ -96,19 +107,21 @@ public:
        ,logical_or_oper
        ,assignment_oper
     };
-    std::unique_ptr<expression> left, right;
+    expr_ptr left, right;
     operator_type oper;
-    binary_expression(expression* left, expression* right, operator_type oper) :
-        left(left), right(right), oper(oper)
+    binary_expression(expr_ptr left, expr_ptr right, operator_type oper) :
+        left(std::move(left)), right(std::move(right)), oper(oper)
     {}
 };
 
 class conditional_expression : public expression
 {
 public:
-    std::unique_ptr<expression> condition, true_expression, false_expression;
-    conditional_expression(expression* condition, expression* true_expr, expression* false_expr) :
-        condition(condition), true_expression(true_expr), false_expression(false_expr)
+    expr_ptr condition, true_expression, false_expression;
+    conditional_expression(expr_ptr condition, expr_ptr true_expr, expr_ptr false_expr) :
+        condition(std::move(condition)),
+        true_expression(std::move(true_expr)),
+        false_expression(std::move(false_expr))
     {}
 };
 
