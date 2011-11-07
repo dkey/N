@@ -22,7 +22,7 @@
 
 spaces                          [ ]|\t
 line_terminator                 \n|\r\n
-decimal_integer                 [0-9]([[0-9]_]*[0-9])?
+decimal_integer                 [0-9]([0-9_]*[0-9])?
 hex_integer                     (0x|0X)[0-9a-fA-F]+
 octal_integer                   0o[0-7]+
 integer                         {decimal_integer}|{hex_integer}|{octal_integer}

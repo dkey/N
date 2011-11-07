@@ -1,0 +1,9 @@
+foo(int i) -> int
+{
+  return i if i > 0 else -i;
+}
+
+main() -> int
+{
+  foo(1);
+}
