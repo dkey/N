@@ -14,9 +14,10 @@ ADD_FLEX_BISON_DEPENDENCY(N_lexer N_syntax)
 include_directories(${FLEX_INCLUDE_DIRS} ${PROJECT_BINARY_DIR} ${n_compiler_SOURCE_DIR})
 
 add_executable(nc
-    parser/n_lexer.cpp
     ${BISON_N_syntax_OUTPUTS}
     ${FLEX_N_lexer_OUTPUTS}
     main.cpp
+    parser/n_lexer.cpp
     parser/n_parser.cpp
+    util/hierarchy_node.cpp
 )
